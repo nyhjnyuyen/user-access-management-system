@@ -1,6 +1,6 @@
 package com.r2s.auth.dto;
 
-import com.r2s.auth.entity.Role;
+import com.r2s.core.entity.Role;
 
 public class RegisterRequest {
     private String username;

@@ -1,4 +1,4 @@
-package com.r2s.auth.security;
+package com.r2s.core.security;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

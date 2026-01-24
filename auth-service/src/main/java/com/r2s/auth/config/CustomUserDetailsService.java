@@ -1,6 +1,6 @@
-package com.r2s.auth.security;
+package com.r2s.auth.config;
 
-import com.r2s.auth.entity.User;
+import com.r2s.core.entity.User;
 import com.r2s.auth.repository.UserRepository;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

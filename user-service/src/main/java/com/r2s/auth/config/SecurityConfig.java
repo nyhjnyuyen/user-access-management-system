@@ -1,5 +1,6 @@
 package com.r2s.auth.config;
 
+import com.r2s.core.security.JwtFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;

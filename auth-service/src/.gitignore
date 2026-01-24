@@ -1,0 +1,16 @@
+# IntelliJ
+.idea/
+*.iml
+
+# Maven
+target/
+**/target/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+
+# Local secrets
+application-local.properties

@@ -1,4 +1,4 @@
-package com.r2s.auth.entity;
+package com.r2s.core.entity;
 
 
 import javax.persistence.*;
@@ -16,12 +16,14 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-   @Enumerated(EnumType.STRING)
-   @Column(nullable = false)
-   private Role role; //ADMIN, USER
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role; //ADMIN, USER
 
-    public User() {
-    }
+    @Column(nullable = false, unique = true)
+    private String email;
+    @Column(nullable = false)
+    private String fullName;
 
 
     public String getPassword() {
@@ -54,6 +56,18 @@ public class User {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+    public String getEmail() {
+        return email;
+    }
+    public void setEmail(String email) {
+        this.email = email;
+    }
+    public String getFullName() {
+        return fullName;
+    }
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 
 }

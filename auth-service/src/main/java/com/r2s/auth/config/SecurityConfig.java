@@ -1,6 +1,7 @@
 package com.r2s.auth.config;
 
-import com.r2s.auth.security.JwtFilter;
+import com.r2s.core.security.JwtFilter;
+import com.r2s.core.security.JwtUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -18,14 +19,14 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableGlobalMethodSecurity(prePostEnabled = true) // bat phan quyen o cap method
 public class SecurityConfig {
     private final JwtFilter jwtFilter;
-    private final UserDetailsService userDetailsService;
-    public SecurityConfig(JwtFilter jwtFilter, UserDetailsService userDetailsService) {
+
+    public SecurityConfig(JwtFilter jwtFilter) {
         this.jwtFilter = jwtFilter;
-        this.userDetailsService = userDetailsService;
     }
 
+
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtFilter jwtFilter) throws Exception {
         http.csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/auth/**").permitAll()

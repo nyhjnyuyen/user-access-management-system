@@ -20,9 +20,8 @@ public class User {
     @Column(nullable = false)
     private Role role; //ADMIN, USER
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String email;
-    @Column(nullable = false)
     private String fullName;
 
 

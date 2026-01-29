@@ -1,11 +1,12 @@
-package com.r2s.auth.service;
+package com.r2s.user.service;
 
-import com.r2s.auth.dto.UpdateUserRequest;
-import com.r2s.auth.dto.UserResponse;
-import com.r2s.auth.entity.User;
-import com.r2s.auth.repository.UserRepository;
+import com.r2s.user.dto.UpdateUserRequest;
+import com.r2s.user.dto.UserResponse;
+import com.r2s.user.entity.User;
+import com.r2s.user.repository.UserRepository;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,6 +35,7 @@ public class UserService {
         user.setEmail(req.getEmail());
         return UserResponse.fromEntity(repo.save(user));
     }
+    @Transactional
     public void deleteUser(String username){
         repo.deleteByUsername(username);
     }

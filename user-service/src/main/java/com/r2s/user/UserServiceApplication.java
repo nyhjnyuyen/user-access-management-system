@@ -1,4 +1,4 @@
-package com.r2s.auth;
+package com.r2s.user;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -1,8 +1,8 @@
-package com.r2s.auth.controller;
+package com.r2s.user.controller;
 
-import com.r2s.auth.dto.UpdateUserRequest;
-import com.r2s.auth.dto.UserResponse;
-import com.r2s.auth.service.UserService;
+import com.r2s.user.dto.UpdateUserRequest;
+import com.r2s.user.dto.UserResponse;
+import com.r2s.user.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;

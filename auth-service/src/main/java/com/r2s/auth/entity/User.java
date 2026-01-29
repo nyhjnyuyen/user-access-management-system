@@ -1,6 +1,8 @@
 package com.r2s.auth.entity;
 
 
+import com.r2s.auth.entity.Role;
+
 import javax.persistence.*;
 
 @Entity

@@ -1,4 +1,4 @@
-package com.r2s.auth;
+package com.r2s.user;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

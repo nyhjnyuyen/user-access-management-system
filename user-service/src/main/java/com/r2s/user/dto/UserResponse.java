@@ -1,6 +1,6 @@
-package com.r2s.auth.dto;
+package com.r2s.user.dto;
 
-import com.r2s.auth.entity.User;
+import com.r2s.user.entity.User;
 
 public class UserResponse {
     private String username;

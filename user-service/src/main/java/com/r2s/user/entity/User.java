@@ -1,4 +1,4 @@
-package com.r2s.auth.entity;
+package com.r2s.user.entity;
 
 import javax.persistence.*;
 

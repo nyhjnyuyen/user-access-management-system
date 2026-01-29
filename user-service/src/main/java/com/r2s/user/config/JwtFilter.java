@@ -1,4 +1,4 @@
-package com.r2s.auth.config;
+package com.r2s.user.config;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;

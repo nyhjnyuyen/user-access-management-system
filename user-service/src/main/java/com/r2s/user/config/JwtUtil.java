@@ -1,4 +1,4 @@
-package com.r2s.auth.config;
+package com.r2s.user.config;
 
 import io.jsonwebtoken.Jwts;
 import org.springframework.security.core.userdetails.UserDetails;

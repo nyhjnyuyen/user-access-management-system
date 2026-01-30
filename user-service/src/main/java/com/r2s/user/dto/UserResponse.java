@@ -1,4 +1,4 @@
-package com.r2s.auth.dto;
+package com.r2s.user.dto;
 
 import com.r2s.core.entity.User;
 

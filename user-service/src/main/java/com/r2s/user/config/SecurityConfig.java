@@ -1,4 +1,4 @@
-package com.r2s.auth.config;
+package com.r2s.user.config;
 
 import com.r2s.core.security.JwtFilter;
 import org.springframework.context.annotation.Bean;

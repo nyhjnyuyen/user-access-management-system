@@ -1,4 +1,4 @@
-package com.r2s.auth.repository;
+package com.r2s.user.repository;
 
 import com.r2s.core.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;

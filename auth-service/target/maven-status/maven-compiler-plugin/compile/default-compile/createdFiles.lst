@@ -1,6 +1,7 @@
 com/r2s/auth/dto/AuthResponse.class
 com/r2s/auth/config/CustomUserDetailsService.class
 com/r2s/auth/dto/RegisterRequest.class
+com/r2s/auth/config/RestTemplateConfig.class
 com/r2s/auth/service/AuthService.class
 com/r2s/auth/repository/UserRepository.class
 com/r2s/auth/controller/HelloController.class

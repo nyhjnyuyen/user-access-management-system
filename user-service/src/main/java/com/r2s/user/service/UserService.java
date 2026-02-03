@@ -8,6 +8,7 @@ import com.r2s.user.repository.UserRepository;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,8 +16,11 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
     private final UserRepository repo;
-    public UserService(UserRepository repo) {
+    private final RestTemplate restTemplate;
+
+    public UserService(UserRepository repo, RestTemplate restTemplate) {
         this.repo = repo;
+        this.restTemplate = restTemplate;
     }
     public List<UserResponse> getAllUsers() {
         return repo.findAll().stream().map(UserResponse::fromEntity)
@@ -39,7 +43,11 @@ public class UserService {
 
     @Transactional
     public void deleteUser(String username){
+        restTemplate.delete("http://auth-service:8081/internal/auth-users/{username}",
+                username
+        );
         repo.deleteByUsername(username);
+
     }
 
     @Transactional

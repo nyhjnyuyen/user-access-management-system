@@ -1,5 +1,6 @@
 /Users/nguyendongnghi/user-access-management/core/src/main/java/com/r2s/core/entity/Role.java
 /Users/nguyendongnghi/user-access-management/core/src/main/java/com/r2s/core/exception/CustomException.java
+/Users/nguyendongnghi/user-access-management/core/src/main/java/com/r2s/core/config/RestTemplateConfig.java
 /Users/nguyendongnghi/user-access-management/core/src/main/java/com/r2s/core/CoreApplication.java
 /Users/nguyendongnghi/user-access-management/core/src/main/java/com/r2s/core/config/SecurityConstants.java
 /Users/nguyendongnghi/user-access-management/core/src/main/java/com/r2s/core/exception/GlobalExceptionHandler.java

@@ -1,4 +1,4 @@
-package com.r2s.auth.config;
+package com.r2s.core.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -28,6 +28,11 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+        http.exceptionHandling(ex -> ex
+                .authenticationEntryPoint((req, res, e) -> res.sendError(401))
+                .accessDeniedHandler((req, res, e) -> res.sendError(403))
+        );
+
         return http.build();
     }
 }

@@ -27,10 +27,13 @@ public class User {
     @Column(nullable = false)
     private Role role; //ADMIN, USER
 
-    @Column(unique = true)
+    @Column(nullable=false, unique = true)
     private String email;
 
     private String fullName;
+
+    @Column(nullable = false)
+    private boolean enabled = false;
 
 
     public String getPassword() {
@@ -77,4 +80,12 @@ public class User {
         this.fullName = fullName;
     }
 
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
 }

@@ -56,6 +56,7 @@ public class UserService {
         user.setUsername(req.getUsername());
         user.setPassword(req.getPassword());
         user.setRole(req.getRole());
+        user.setEmail(req.getEmail());
         repo.save(user);
     }
 }

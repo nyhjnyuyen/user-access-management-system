@@ -48,5 +48,12 @@ public class UserResponse {
         res.setFullName(user.getFullName());
         return res;
     }
+    public UserResponse (String username, String fullName, String email, String role) {
+        this.username = username;
+        this.role = role;
+        this.email = email;
+        this.fullName = fullName;
+    }
+    public UserResponse() {}
 }
 

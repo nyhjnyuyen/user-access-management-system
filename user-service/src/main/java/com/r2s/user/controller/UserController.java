@@ -1,5 +1,8 @@
 package com.r2s.user.controller;
 
+import com.r2s.core.dto.ApiResponse;
+import com.r2s.core.entity.User;
+import com.r2s.user.dto.RegisterRequest;
 import com.r2s.user.dto.UpdateUserRequest;
 import com.r2s.user.dto.UserResponse;
 import com.r2s.user.service.UserService;
@@ -21,20 +24,23 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<UserResponse>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public ResponseEntity<ApiResponse<List<UserResponse>>> getAllUsers() {
+        List<UserResponse> users = userService.getAllUsers();
+        return ResponseEntity.ok(new ApiResponse<>("Users retrieved successfully", users));
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UserResponse> getMyProfile(Authentication authentication) {
+    public ResponseEntity<ApiResponse<UserResponse>> getMyProfile(Authentication authentication) {
         String username = authentication.getName();
-        return ResponseEntity.ok(userService.getUserByUsername(username));
+        UserResponse profile = userService.getUserByUsername(username);
+        return ResponseEntity.ok(new ApiResponse<>("Profile retrieved successfully", profile));
     }
 
     @PutMapping("/me")
-    public ResponseEntity<UserResponse> updateMyProfile(@RequestBody UpdateUserRequest request, Authentication authentication) {
+    public ResponseEntity<ApiResponse<UserResponse>> updateMyProfile(@RequestBody UpdateUserRequest request, Authentication authentication) {
         String username = authentication.getName();
-        return ResponseEntity.ok(userService.updateUser(username, request));
+        UserResponse update = userService.updateUser(username, request);
+        return ResponseEntity.ok(new ApiResponse<>("Profile updated successfully", update));
     }
 
     @DeleteMapping("/{username}")
@@ -42,5 +48,11 @@ public class UserController {
     public ResponseEntity<Void>deleteUser (@PathVariable("username") String username) {
         userService.deleteUser(username);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping
+    public ResponseEntity<ApiResponse<UserResponse>> createUser(@RequestBody RegisterRequest request) {
+        User created = userService.createUserFromAuth(request);
+        return ResponseEntity.ok(new ApiResponse<>("User created successfully", UserResponse.fromEntity(created)));
     }
 }

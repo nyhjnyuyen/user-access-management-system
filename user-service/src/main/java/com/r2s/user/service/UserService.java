@@ -1,5 +1,6 @@
 package com.r2s.user.service;
 
+import com.r2s.core.exception.DeleteException;
 import com.r2s.user.dto.RegisterRequest;
 import com.r2s.user.dto.UpdateUserRequest;
 import com.r2s.user.dto.UserResponse;
@@ -39,15 +40,19 @@ public class UserService {
 
     @Transactional
     public void deleteUser(String username){
-        repo.deleteByUsername(username);
+
+        User user = repo.findByUsername(username).orElseThrow(() -> new DeleteException("User not found"));
+
+        try{
+            repo.delete(user);
+        } catch (Exception e) {
+            throw new DeleteException("Could not delete user");
+        }
     }
 
     @Transactional
-    public void createUserFromAuth(RegisterRequest req){
-        User user = new User();
-        user.setUsername(req.getUsername());
-        user.setPassword(req.getPassword());
-        user.setRole(req.getRole());
-        repo.save(user);
+    public User createUserFromAuth(RegisterRequest req){
+        User user = User.builder().username(req.getUsername()).password(req.getPassword()).role(req.getRole()).fullName(req.getFullName()).email(req.getEmail()).build();
+        return repo.save(user);
     }
 }

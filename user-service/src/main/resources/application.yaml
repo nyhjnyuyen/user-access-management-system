@@ -4,3 +4,23 @@ server:
 api:
   base:
     path: /api/v1
+app:
+  auth-service:
+    url: ${AUTH_SERVICE_URL}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+spring:
+  application:
+    name: user-service
+
+jwt:
+  secret: ${JWT_SERCRET}
+  expiration-ms: 36000000

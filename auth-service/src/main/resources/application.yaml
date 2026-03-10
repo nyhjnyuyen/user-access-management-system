@@ -8,5 +8,27 @@ api:
 spring:
   profiles:
     active: dev
+  application:
+    name: auth-service
+
+jwt:
+  secret: ${JWT_SERCRET}
+  expiration-ms: 36000000
+
+app:
+  internal-secret: ${INTERNAL_SECRET}
+  activation:
+    base-url: ${APP_BASE_URL}
+  user-service:
+    url: ${USER_SERVICE_URL}
+
+  management:
+    endpoints:
+      web:
+        exposure:
+          include: health
+    endpoint:
+      health:
+        show-details: never
 
 

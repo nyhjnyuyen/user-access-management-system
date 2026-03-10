@@ -9,6 +9,8 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name="users")
@@ -17,9 +19,13 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank
+    @Size(min=4)
     @Column(nullable = false, unique = true)
     private String username;
 
+    @NotBlank
+    @Size(min=8)
     @Column(nullable = false)
     private String password;
 
@@ -32,6 +38,7 @@ public class User {
 
     private String fullName;
 
+    //them
     @Column(nullable = false)
     private boolean enabled = false;
 

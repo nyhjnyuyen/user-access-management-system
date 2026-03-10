@@ -2,11 +2,16 @@ package com.r2s.auth.dto;
 
 import com.r2s.core.entity.Role;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 public class RegisterRequest {
+    @NotBlank
+    @Size(min = 8)
     private String username;
+
+    @NotBlank
+    @Size(min = 8)
     private String password;
-    private Role role;
 
     @NotBlank(message = "Email is required")
     private String email;
@@ -25,14 +30,6 @@ public class RegisterRequest {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
     }
     public String getEmail() {
         return email;

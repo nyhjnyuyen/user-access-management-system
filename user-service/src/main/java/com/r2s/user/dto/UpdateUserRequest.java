@@ -1,7 +1,12 @@
 package com.r2s.user.dto;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Size;
 public class UpdateUserRequest {
+    @Size(max=100)
     private String fullName;
+
+    @Email(message = "Email is invalid")
     private String email;
 
     public String getFullName() {

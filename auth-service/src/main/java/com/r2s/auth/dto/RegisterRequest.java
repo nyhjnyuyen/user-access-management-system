@@ -1,6 +1,7 @@
 package com.r2s.auth.dto;
 
 import com.r2s.core.entity.Role;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -14,6 +15,7 @@ public class RegisterRequest {
     private String password;
 
     @NotBlank(message = "Email is required")
+    @Email
     private String email;
 
     // Generate getters and setter

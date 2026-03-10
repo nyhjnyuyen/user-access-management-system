@@ -11,6 +11,7 @@ import com.r2s.auth.repository.UserRepository;
 import com.r2s.core.exception.CustomException;
 import com.r2s.core.security.JwtUtil;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -103,7 +104,7 @@ public class AuthService {
                 User user = userRepo.findByUsername(request.getUsername()).orElseThrow(() -> new UsernameNotFoundException("Not found"));
 
                 if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-                        throw new BadCredentialsException("Invalid password");
+                        throw new BadCredentialsException("Invalid username or password");
                 }
 
                 if (!user.isEnabled()) throw new CustomException(HttpStatus.UNPROCESSABLE_ENTITY, "Account is not activated");

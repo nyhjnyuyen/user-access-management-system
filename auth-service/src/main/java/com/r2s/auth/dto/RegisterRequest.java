@@ -7,7 +7,6 @@ import jakarta.validation.constraints.Size;
 
 public class RegisterRequest {
     @NotBlank
-    @Size(min = 8)
     private String username;
 
     @NotBlank

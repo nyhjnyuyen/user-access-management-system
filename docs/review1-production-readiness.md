@@ -8,46 +8,46 @@
 
 ## Bảng đánh giá
 
-| Module/Package/File | Nội dung cần cải thiện | Mức độ ưu tiên | Gợi ý cải thiện | Checklist hoàn thành |
-|---------------------|------------------------|----------------|------------------|----------------------|
-| **core/security/JwtUtil.java** | JWT secret key hardcode trong source code | **CRITICAL** | Chuyển secret sang biến môi trường (ví dụ `JWT_SECRET`) hoặc config server; inject qua `@Value("${jwt.secret}")` | ☐ |
-| **core/security/JwtUtil.java** | `SignatureAlgorithm.HS256` deprecated | Medium | Dùng `Jwts.SIG.HS256` hoặc `Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8))` theo chuẩn jwt mới | ☐ |
-| **core/security/JwtUtil.java** | Thời gian hết hạn JWT không cấu hình được | Medium | Đưa token expiration vào `application.yaml` (ví dụ `jwt.expiration-ms`) và inject qua `@Value` | ☐ |
-| **core/security/JwtFilter.java** | Không xử lý exception khi parse JWT sai (token hết hạn, format sai) | **CRITICAL** | Bọc `extractUsername` và `validateToken` trong try-catch; khi lỗi, return 401 và không set authentication | ☐ |
-| **core/security/JwtFilter.java** | Không kiểm tra token hết hạn | High | Thêm kiểm tra expiration trong `validateToken` hoặc dùng `parseClaimsJws` trước khi extract | ☐ |
-| **auth-service/config/SecurityConfig.java** | Endpoint `/internal/**` cho phép truy cập công khai | **CRITICAL** | Bảo vệ internal endpoint bằng mạng nội bộ (network policy), API key, hoặc service-to-service authentication | ☐ |
-| **user-service/config/SecurityConfig.java** | Endpoint `/internal/**` cho phép truy cập công khai | **CRITICAL** | Tương tự auth-service; chỉ cho phép request từ auth-service (IP whitelist, mTLS, hoặc shared secret) | ☐ |
-| **auth-service/service/AuthService.java** | Link kích hoạt hardcode `http://localhost:8081` | **CRITICAL** | Dùng config `app.activation.base-url` hoặc `APP_BASE_URL` từ biến môi trường | ☐ |
-| **auth-service/service/AuthService.java** | Cho phép user gửi role khi đăng ký (có thể tự đăng ký ADMIN) | **CRITICAL** | Bỏ `role` từ request; gán mặc định `ROLE_USER` cho mọi user mới đăng ký | ☐ |
-| **auth-service/service/AuthService.java** | Sync user sang user-service không có retry/rollback khi lỗi | High | Thêm retry logic; nếu sync fail, rollback user trong auth-service hoặc xử lý eventual consistency | ☐ |
-| **auth-service/service/AuthService.java** | Gửi email trước khi sync user-service | Medium | Xem xét: nếu email fail hoặc sync fail, user có thể bị inconsistent; cân nhắc thứ tự gửi email sau sync | ☐ |
-| **user-service/service/UserService.java** | `deleteUser`: gọi auth-service trước, nếu auth delete thành công nhưng user-service delete fail → dữ liệu không đồng bộ | High | Thêm xử lý lỗi; nếu auth delete fail, không xóa user-service; cân nhắc saga/compensation nếu cần | ☐ |
-| **user-service/service/UserService.java** | `deleteUser`: RestTemplate không có timeout | Medium | Cấu hình `RestTemplate` với `ConnectTimeout` và `ReadTimeout` | ☐ |
-| **core/config/RestTemplateConfig.java** | RestTemplate không có timeout, retry | Medium | Thêm `ClientHttpRequestFactory` với timeout; cân nhắc retry cho inter-service calls | ☐ |
-| **auth-service/dto/RegisterRequest.java** | Thiếu `@NotBlank` cho username, password | High | Thêm `@NotBlank` cho username, password; thêm `@Size(min=8)` cho password | ☐ |
-| **auth-service/dto/RegisterRequest.java** | Thiếu validation email format | Medium | Thêm `@Email` cho trường email | ☐ |
-| **auth-service/dto/LoginRequest.java** | Thiếu validation | Medium | Thêm `@NotBlank` cho username và password | ☐ |
-| **auth-service/controller/AuthController.java** | `/login` không dùng `@Valid` | Medium | Thêm `@Valid @RequestBody LoginRequest` | ☐ |
-| **user-service/dto/UpdateUserRequest.java** | Thiếu validation | Medium | Thêm `@Email` cho email, `@Size(max=255)` cho fullName | ☐ |
-| **user-service/service/UserService.java** | `updateUser` không kiểm tra email trùng | Medium | Kiểm tra email unique trước khi update (trừ email của chính user đó) | ☐ |
-| **core/exception/GlobalExceptionHandler.java** | `handleAll(Exception)` trả về `ex.getMessage()` ra client | Medium | Không log stack trace; trả generic message cho client; log chi tiết lỗi ra server log | ☐ |
-| **core/exception/GlobalExceptionHandler.java** | Thiếu handler cho `BadCredentialsException` | Medium | Thêm handler trả 401 với message thống nhất | ☐ |
-| **core/exception/GlobalExceptionHandler.java** | Thiếu handler cho `MethodArgumentNotValidException` (validation errors) | Medium | Thêm handler trả 400 với danh sách lỗi validation | ☐ |
-| **application-docker.yaml** (auth & user) | `ddl-auto: update` trong production | **CRITICAL** | Đổi thành `validate` hoặc `none`; dùng Flyway/Liquibase cho migration | ☐ |
-| **application-docker.yaml** | `show-sql: true` trong production | High | Tắt `show-sql`; dùng logging level riêng cho SQL nếu cần debug | ☐ |
-| **docker-compose.yaml** | Mật khẩu PostgreSQL hardcode | High | Dùng `.env` file và biến môi trường; không commit mật khẩu thật | ☐ |
-| **docker-compose.yaml** | Thiếu health check cho services | Medium | Thêm `healthcheck` cho postgres, auth-service, user-service | ☐ |
-| **auth-service/Dockerfile** | Dùng JDK thay vì JRE | Low | Dùng `eclipse-temurin:17-jre-jammy` để giảm kích thước image | ☐ |
-| **user-service/Dockerfile** | Dùng JDK thay vì JRE | Low | Tương tự auth-service | ☐ |
-| **auth-service** | Thiếu cấu hình URL user-service | High | Thêm `USER_SERVICE_URL` hoặc `app.user-service.url` thay vì hardcode | ☐ |
-| **user-service** | Thiếu cấu hình URL auth-service | High | Thêm `AUTH_SERVICE_URL` hoặc `app.auth-service.url` thay vì hardcode | ☐ |
-| **auth-service/service/EmailService.java** | Không xử lý lỗi gửi email | Medium | Bắt exception, log lỗi; cân nhắc queue/async để không block registration | ☐ |
-| **user-service/controller/UserController.java** | `updateMyProfile` không validate request | Medium | Thêm `@Valid @RequestBody UpdateUserRequest` | ☐ |
-| **core/entity/User.java** | Thiếu `@CreationTimestamp`, `@UpdateTimestamp` | Low | Thêm audit fields (createdAt, updatedAt) nếu cần | ☐ |
-| **auth-service** | Không có rate limiting cho /login, /register | High | Thêm rate limiting (Bucket4j, Resilience4j) để chống brute force | ☐ |
-| **Toàn hệ thống** | Thiếu logging chuẩn | Medium | Dùng structured logging (JSON); log request ID, user, action | ☐ |
-| **Toàn hệ thống** | Thiếu monitoring/metrics | Medium | Thêm Actuator, Prometheus metrics; health endpoints | ☐ |
-| **Toàn hệ thống** | Thiếu API documentation cho production | Low | Bật Swagger/OpenAPI với config riêng cho production (có thể tắt trong prod) | ☐ |
+| Module/Package/File | Nội dung cần cải thiện | Mức độ ưu tiên | Gợi ý cải thiện | Checklist hoàn thành                                                                           |
+|---------------------|------------------------|----------------|------------------|------------------------------------------------------------------------------------------------|
+| **core/security/JwtUtil.java** | JWT secret key hardcode trong source code | **CRITICAL** | Chuyển secret sang biến môi trường (ví dụ `JWT_SECRET`) hoặc config server; inject qua `@Value("${jwt.secret}")` | v                                                                                              |
+| **core/security/JwtUtil.java** | `SignatureAlgorithm.HS256` deprecated | Medium | Dùng `Jwts.SIG.HS256` hoặc `Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8))` theo chuẩn jwt mới | v                                                                                              |
+| **core/security/JwtUtil.java** | Thời gian hết hạn JWT không cấu hình được | Medium | Đưa token expiration vào `application.yaml` (ví dụ `jwt.expiration-ms`) và inject qua `@Value` | v                                                                                              |
+| **core/security/JwtFilter.java** | Không xử lý exception khi parse JWT sai (token hết hạn, format sai) | **CRITICAL** | Bọc `extractUsername` và `validateToken` trong try-catch; khi lỗi, return 401 và không set authentication | v                                                                                              |
+| **core/security/JwtFilter.java** | Không kiểm tra token hết hạn | High | Thêm kiểm tra expiration trong `validateToken` hoặc dùng `parseClaimsJws` trước khi extract | v                                                                                              |
+| **auth-service/config/SecurityConfig.java** | Endpoint `/internal/**` cho phép truy cập công khai | **CRITICAL** | Bảo vệ internal endpoint bằng mạng nội bộ (network policy), API key, hoặc service-to-service authentication | v                                                                                              |
+| **user-service/config/SecurityConfig.java** | Endpoint `/internal/**` cho phép truy cập công khai | **CRITICAL** | Tương tự auth-service; chỉ cho phép request từ auth-service (IP whitelist, mTLS, hoặc shared secret) | v                                                                                              |
+| **auth-service/service/AuthService.java** | Link kích hoạt hardcode `http://localhost:8081` | **CRITICAL** | Dùng config `app.activation.base-url` hoặc `APP_BASE_URL` từ biến môi trường | v                                                                                              |
+| **auth-service/service/AuthService.java** | Cho phép user gửi role khi đăng ký (có thể tự đăng ký ADMIN) | **CRITICAL** | Bỏ `role` từ request; gán mặc định `ROLE_USER` cho mọi user mới đăng ký | v                                                                                              |
+| **auth-service/service/AuthService.java** | Sync user sang user-service không có retry/rollback khi lỗi | High | Thêm retry logic; nếu sync fail, rollback user trong auth-service hoặc xử lý eventual consistency | v                                                                                              |
+| **auth-service/service/AuthService.java** | Gửi email trước khi sync user-service | Medium | Xem xét: nếu email fail hoặc sync fail, user có thể bị inconsistent; cân nhắc thứ tự gửi email sau sync | v                                                                                              |
+| **user-service/service/UserService.java** | `deleteUser`: gọi auth-service trước, nếu auth delete thành công nhưng user-service delete fail → dữ liệu không đồng bộ | High | Thêm xử lý lỗi; nếu auth delete fail, không xóa user-service; cân nhắc saga/compensation nếu cần | ch xong vde hien tai la neu xoa o auth-service thanh cong, deletion o user-service co the fail |
+| **user-service/service/UserService.java** | `deleteUser`: RestTemplate không có timeout | Medium | Cấu hình `RestTemplate` với `ConnectTimeout` và `ReadTimeout` | v                                                                                              |
+| **core/config/RestTemplateConfig.java** | RestTemplate không có timeout, retry | Medium | Thêm `ClientHttpRequestFactory` với timeout; cân nhắc retry cho inter-service calls | v                                                                                              |
+| **auth-service/dto/RegisterRequest.java** | Thiếu `@NotBlank` cho username, password | High | Thêm `@NotBlank` cho username, password; thêm `@Size(min=8)` cho password | v                                                                                              |
+| **auth-service/dto/RegisterRequest.java** | Thiếu validation email format | Medium | Thêm `@Email` cho trường email | v                                                                                              |
+| **auth-service/dto/LoginRequest.java** | Thiếu validation | Medium | Thêm `@NotBlank` cho username và password | v                                                                                              |
+| **auth-service/controller/AuthController.java** | `/login` không dùng `@Valid` | Medium | Thêm `@Valid @RequestBody LoginRequest` | v                                                                                              |
+| **user-service/dto/UpdateUserRequest.java** | Thiếu validation | Medium | Thêm `@Email` cho email, `@Size(max=255)` cho fullName | v                                                                                              |
+| **user-service/service/UserService.java** | `updateUser` không kiểm tra email trùng | Medium | Kiểm tra email unique trước khi update (trừ email của chính user đó) | v                                                                                              |
+| **core/exception/GlobalExceptionHandler.java** | `handleAll(Exception)` trả về `ex.getMessage()` ra client | Medium | Không log stack trace; trả generic message cho client; log chi tiết lỗi ra server log | v                                                                                              |
+| **core/exception/GlobalExceptionHandler.java** | Thiếu handler cho `BadCredentialsException` | Medium | Thêm handler trả 401 với message thống nhất | v                                                                                              |
+| **core/exception/GlobalExceptionHandler.java** | Thiếu handler cho `MethodArgumentNotValidException` (validation errors) | Medium | Thêm handler trả 400 với danh sách lỗi validation | v                                                                                              |
+| **application-docker.yaml** (auth & user) | `ddl-auto: update` trong production | **CRITICAL** | Đổi thành `validate` hoặc `none`; dùng Flyway/Liquibase cho migration | ☐                                                                                              |
+| **application-docker.yaml** | `show-sql: true` trong production | High | Tắt `show-sql`; dùng logging level riêng cho SQL nếu cần debug | v                                                                                              |
+| **docker-compose.yaml** | Mật khẩu PostgreSQL hardcode | High | Dùng `.env` file và biến môi trường; không commit mật khẩu thật | v                                                                                              |
+| **docker-compose.yaml** | Thiếu health check cho services | Medium | Thêm `healthcheck` cho postgres, auth-service, user-service | v                                                                                              |
+| **auth-service/Dockerfile** | Dùng JDK thay vì JRE | Low | Dùng `eclipse-temurin:17-jre-jammy` để giảm kích thước image | v                                                                                              |
+| **user-service/Dockerfile** | Dùng JDK thay vì JRE | Low | Tương tự auth-service | v                                                                                              |
+| **auth-service** | Thiếu cấu hình URL user-service | High | Thêm `USER_SERVICE_URL` hoặc `app.user-service.url` thay vì hardcode | v                                                                                              |
+| **user-service** | Thiếu cấu hình URL auth-service | High | Thêm `AUTH_SERVICE_URL` hoặc `app.auth-service.url` thay vì hardcode | v                                                                                              |
+| **auth-service/service/EmailService.java** | Không xử lý lỗi gửi email | Medium | Bắt exception, log lỗi; cân nhắc queue/async để không block registration | partially chua queue/async                                                                     |
+| **user-service/controller/UserController.java** | `updateMyProfile` không validate request | Medium | Thêm `@Valid @RequestBody UpdateUserRequest` | v                                                                                              |
+| **core/entity/User.java** | Thiếu `@CreationTimestamp`, `@UpdateTimestamp` | Low | Thêm audit fields (createdAt, updatedAt) nếu cần | ☐                                                                                              |
+| **auth-service** | Không có rate limiting cho /login, /register | High | Thêm rate limiting (Bucket4j, Resilience4j) để chống brute force | v                                                                                              |
+| **Toàn hệ thống** | Thiếu logging chuẩn | Medium | Dùng structured logging (JSON); log request ID, user, action | v                                                                                              |
+| **Toàn hệ thống** | Thiếu monitoring/metrics | Medium | Thêm Actuator, Prometheus metrics; health endpoints | ☐                                                                                              |
+| **Toàn hệ thống** | Thiếu API documentation cho production | Low | Bật Swagger/OpenAPI với config riêng cho production (có thể tắt trong prod) | ☐                                                                                              |
 
 ---
 
@@ -106,25 +106,25 @@
 
 | Vấn đề | Vị trí | Mô tả | Production-ready? |
 |--------|--------|-------|-------------------|
-| **Role từ client** | `AuthService.register()` L46 | `user.setRole(request.getRole())` – client có thể gửi `ROLE_ADMIN` | ❌ Không |
-| **Validation thiếu** | `RegisterRequest` | Chỉ có `@NotBlank` cho email; username, password không validate | ❌ Không |
-| **Validation thiếu** | `LoginRequest` | Không có `@Valid`, không validate | ❌ Không |
-| **Link hardcode** | `AuthService` L59 | `http://localhost:8081` – sai trong Docker/production | ❌ Không |
-| **Không transactional** | `AuthService.register()` | Nhiều bước (DB, email, sync) nhưng không có transaction/compensation | ❌ Không |
-| **Email không xử lý lỗi** | `EmailService.sendActivationEmail()` | `mailSender.send()` có thể throw, không try-catch | ❌ Không |
-| **Sync không xử lý lỗi** | `AuthService.register()` L70-74 | `RestTemplate.postForEntity` có thể fail, không retry/rollback | ❌ Không |
-| **Thứ tự thực thi** | `AuthService.register()` | Gửi email trước sync → user có thể nhận email nhưng user-service chưa có user | ⚠️ Cần xem xét |
+| **Role từ client** | `AuthService.register()` L46 | `user.setRole(request.getRole())` – client có thể gửi `ROLE_ADMIN` | ❌ Không | da sua backend luon gan ROLE_USER
+| **Validation thiếu** | `RegisterRequest` | Chỉ có `@NotBlank` cho email; username, password không validate | ❌ Không | da them vao dto
+| **Validation thiếu** | `LoginRequest` | Không có `@Valid`, không validate | ❌ Không | da them vao authController
+| **Link hardcode** | `AuthService` L59 | `http://localhost:8081` – sai trong Docker/production | ❌ Không | da dung app.activation.base-url
+| **Không transactional** | `AuthService.register()` | Nhiều bước (DB, email, sync) nhưng không có transaction/compensation | ❌ Không | da them giup rollback local DB neu sync fail
+| **Email không xử lý lỗi** | `EmailService.sendActivationEmail()` | `mailSender.send()` có thể throw, không try-catch | ❌ Không | da them try catch
+| **Sync không xử lý lỗi** | `AuthService.register()` L70-74 | `RestTemplate.postForEntity` có thể fail, không retry/rollback | ❌ Không | da them retry, throw exception de rollback
+| **Thứ tự thực thi** | `AuthService.register()` | Gửi email trước sync → user có thể nhận email nhưng user-service chưa có user | ⚠️ Cần xem xét | da doi thanh sync truoc neu syn that bai throw exception, khong send email
 
 #### 2.2. Flow / Logic
 
 | Vấn đề | Mô tả | Production-ready? |
 |--------|-------|-------------------|
-| **Race condition** | Register: save user → save token → email → sync. Nếu sync fail, user đã nhận email nhưng user-service chưa có user | ❌ Không |
+| **Race condition** | Register: save user → save token → email → sync. Nếu sync fail, user đã nhận email nhưng user-service chưa có user | ❌ Không | da them try catch cho sync user
 | **Idempotency** | Register cùng username/email nhiều lần: lần đầu 409, lần sau vẫn 409 – OK | ✅ OK |
 | **Token reuse** | Activate: kiểm tra `usedAt != null` – tránh dùng lại token | ✅ OK |
 | **Token expiry** | Activate: kiểm tra `expiresAt` – token hết hạn sau 24h | ✅ OK |
 | **Login khi chưa activate** | Login: kiểm tra `user.isEnabled()` – trả 422 | ✅ OK |
-| **Thông báo lỗi** | Login: "Not found" vs "Invalid password" – có thể leak thông tin user tồn tại | ⚠️ Nên thống nhất message |
+| **Thông báo lỗi** | Login: "Not found" vs "Invalid password" – có thể leak thông tin user tồn tại | ⚠️ Nên thống nhất message | da doi
 
 #### 2.3. Technology
 
@@ -133,7 +133,7 @@
 | **Token generation** | `UUID.randomUUID()` – đủ ngẫu nhiên | ✅ OK |
 | **Password** | BCrypt qua `PasswordEncoder` | ✅ OK |
 | **Email** | `JavaMailSender` + SMTP – đồng bộ, có thể block | ⚠️ Nên async |
-| **RestTemplate** | Không timeout, không retry | ❌ Không |
+| **RestTemplate** | Không timeout, không retry | ❌ Không | da them timeout vao restTemplateConfig, retry vao authService
 | **ActivationToken** | Lưu DB, có `expiresAt`, `usedAt` | ✅ OK |
 
 ### 3. Các vấn đề nghiêm trọng cần sửa

@@ -44,8 +44,15 @@ public class UserService {
     public UserResponse updateUser (String username, UpdateUserRequest req){
         User user = repo.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Not found"));
+        String newEmail = req.getEmail();
+
+        if (newEmail != null && !newEmail.equals(user.getEmail())) {
+            repo.findByEmail(newEmail).ifPresent(existingUser -> {
+                throw new CustomException(HttpStatus.CONFLICT, "Email already exists");
+            });
+        }
         user.setFullName(req.getFullName());
-        user.setEmail(req.getEmail());
+        user.setEmail(newEmail);
         return UserResponse.fromEntity(repo.save(user));
     }
 

@@ -1,50 +1,64 @@
 package com.r2s.auth.config;
 
-import io.github.bucket4j.Bandwidth;
-import io.github.bucket4j.Bucket;
-import io.github.bucket4j.Refill;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
 
 @Component
 public class RateLimitFilter extends OncePerRequestFilter {
 
-    private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
-    private Bucket createNewBucket() {
-        Bandwidth limit = Bandwidth.builder()
-                .capacity(5)
-                .refillGreedy(5, Duration.ofMinutes(1))
-                .build();
-        return Bucket.builder()
-                .addLimit(limit)
-                .build();
+    private static final Set<String> RATE_LIMITED_PATHS = Set.of("/auth/login","/auth/register");
+    private static final long MAX_REQUESTS = 5;
+    private static final Duration WINDOW = Duration.ofMinutes(1);
+    private final StringRedisTemplate redisTemplate;
+
+    public RateLimitFilter(StringRedisTemplate redisTemplate) {
+        this.redisTemplate = redisTemplate;
     }
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         String path = request.getRequestURI();
-        if ("/auth/login".equals(path) || "/auth/register".equals(path)) {
-            String clientIP = request.getRemoteAddr();
-            String key = path + ":" + clientIP;
+        if (RATE_LIMITED_PATHS.contains(path)) {
+            String clientIP = resolveClientIp(request);
+            String key = buildKey(path, clientIP);
 
-            Bucket bucket = buckets.computeIfAbsent(key, k -> createNewBucket());
+            Long count = redisTemplate.opsForValue().increment(key);
 
-            if (!bucket.tryConsume(1)) {
+            if(count != null && count == 1L){
+                redisTemplate.expire(key,WINDOW);
+            }
+
+            if (count != null && count > MAX_REQUESTS) {
                 response.setStatus(429);
-                response.getWriter().write("Too many requests");
+                response.setContentType("application/json");
+                response.getWriter().write("""
+                        {"message": "Too many requests. Please try again later."}
+                        """);
+                response.flushBuffer();
                 return;
+
             }
         }
         filterChain.doFilter(request, response);
+    }
+    private String buildKey(String path, String clientIP) {
+        return "ratelimit:" + path + ":" + clientIP;
+    }
+    private String resolveClientIp(HttpServletRequest request) {
+        String forwarded = request.getHeader("X-Forwarded-For");
+        if (forwarded != null && !forwarded.isBlank()) {
+            return forwarded.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
     }
 }

@@ -67,7 +67,7 @@
 - Inconsistency khi delete user
 - Thiếu validation RegisterRequest (username, password)
 - Thiếu cấu hình URL giữa các service
-- Thiếu rate limiting
+- Thiếu rate limiting 
 - `show-sql: true` trong production
 - Mật khẩu DB hardcode trong docker-compose
 

@@ -21,4 +21,4 @@ CREATE TABLE IF NOT EXISTS activation_tokens (
                           );
 \connect "user-service";
 
--- thêm các bảng của user-service ở đây
+

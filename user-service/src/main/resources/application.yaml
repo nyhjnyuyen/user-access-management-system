@@ -5,6 +5,7 @@ api:
   base:
     path: /api/v1
 app:
+  internal-secret: ${INTERNAL_SECRET}
   auth-service:
     url: ${AUTH_SERVICE_URL}
 

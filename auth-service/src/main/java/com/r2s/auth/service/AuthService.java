@@ -5,13 +5,13 @@ import com.r2s.auth.dto.LoginRequest;
 import com.r2s.auth.dto.RegisterRequest;
 import com.r2s.auth.entity.ActivationToken;
 import com.r2s.auth.repository.ActivationTokenRepository;
+import com.r2s.core.dto.SyncUserStatusRequest;
 import com.r2s.core.entity.Role;
 import com.r2s.core.entity.User;
 import com.r2s.auth.repository.UserRepository;
 import com.r2s.core.exception.CustomException;
 import com.r2s.core.security.JwtUtil;
 import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -130,6 +130,12 @@ public class AuthService {
                 userRepo.save(user);
                 t.setUsedAt(java.time.Instant.now());
                 activationTokenRepository.save(t);
+                try {
+                        syncUserEnabledToUserService(user.getUsername(),true);
+                } catch (RestClientException e){
+                        log.error("Failed to sync enabled status to user-service for user {}", user.getUsername());
+                        throw new CustomException(HttpStatus.SERVICE_UNAVAILABLE, "Account activated in auth-service but failed to sync status in user-service");
+                }
         }
 
         private void syncUserToUserService(RegisterRequest syncReq) {
@@ -147,6 +153,82 @@ public class AuthService {
                                         userServiceUrl + "/internal/users",
                                         request,
                                         Void.class
+                                );
+                                return;
+                        } catch (RestClientException e){
+                                if(i == maxAttempts) {
+                                        throw e;
+                                }
+                                try {
+                                        Thread.sleep(1000);
+                                } catch (InterruptedException e1) {
+                                        Thread.currentThread().interrupt();
+                                        throw new RuntimeException("Retry interrupted", e1);
+                                }
+                        }
+                }
+        }
+        @Transactional
+        public void deleteUser(String username) {
+                User user = userRepo.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("Not found"));
+                user.setEnabled(false);
+                userRepo.save(user);
+
+                try {
+                        deleteUserInUserService(username);
+                } catch (RestClientException e){
+                        log.error("User disabled in auth-service but failed to delete in user-service:{}",username, e);
+                        throw new CustomException(HttpStatus.SERVICE_UNAVAILABLE, "User disabled in auth-service but failed to delete in user-service");
+                }
+                userRepo.delete(user);
+        }
+
+        private void deleteUserInUserService(String username) {
+
+                int maxAttempts = 3;
+                HttpHeaders headers = new HttpHeaders();
+                headers.set("X-Internal-Secret", internalSecret);
+                HttpEntity<Void> request = new HttpEntity<>(headers);
+
+                for (int i = 1; i <= maxAttempts; i++) {
+                        try {
+                                restTemplate.exchange(
+                                        userServiceUrl + "/internal/users/{username}",
+                                        org.springframework.http.HttpMethod.DELETE,
+                                        request,
+                                        Void.class,
+                                        username
+                                );
+                                return;
+                        } catch (RestClientException e){
+                                if(i == maxAttempts) {
+                                        throw e;
+                                }
+                                try {
+                                        Thread.sleep(1000);
+                                } catch (InterruptedException e1) {
+                                        Thread.currentThread().interrupt();
+                                        throw new RuntimeException("Retry interrupted", e1);
+                                }
+                        }
+                }
+        }
+        private void syncUserEnabledToUserService(String username, boolean enabled) {
+                int maxAttempts = 3;
+                HttpHeaders headers = new HttpHeaders();
+                headers.set("X-Internal-Secret", internalSecret);
+                SyncUserStatusRequest request = new SyncUserStatusRequest();
+                request.setEnabled(enabled);
+                HttpEntity<SyncUserStatusRequest> req = new HttpEntity<>(request, headers);
+
+                for (int i = 1; i <= maxAttempts; i++) {
+                        try {
+                                restTemplate.exchange(
+                                        userServiceUrl + "/internal/users/{username}/enabled",
+                                        org.springframework.http.HttpMethod.PATCH,
+                                        req,
+                                        Void.class,
+                                        username
                                 );
                                 return;
                         } catch (RestClientException e){

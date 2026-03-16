@@ -10,6 +10,5 @@
 /Users/nguyendongnghi/user-access-management/auth-service/src/main/java/com/r2s/auth/repository/UserRepository.java
 /Users/nguyendongnghi/user-access-management/auth-service/src/main/java/com/r2s/auth/entity/ActivationToken.java
 /Users/nguyendongnghi/user-access-management/auth-service/src/main/java/com/r2s/auth/service/EmailService.java
-/Users/nguyendongnghi/user-access-management/auth-service/src/main/java/com/r2s/auth/controller/InternalUserDeleteController.java
 /Users/nguyendongnghi/user-access-management/auth-service/src/main/java/com/r2s/auth/service/AuthService.java
 /Users/nguyendongnghi/user-access-management/auth-service/src/main/java/com/r2s/auth/dto/AuthResponse.java

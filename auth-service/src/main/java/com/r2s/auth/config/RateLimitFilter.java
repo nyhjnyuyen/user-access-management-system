@@ -16,6 +16,7 @@ import java.util.Set;
 @Component
 public class RateLimitFilter extends OncePerRequestFilter {
 
+    //rate limit these 2 endpoints
     private static final Set<String> RATE_LIMITED_PATHS = Set.of("/auth/login","/auth/register");
     private static final long MAX_REQUESTS = 5;
     private static final Duration WINDOW = Duration.ofMinutes(1);

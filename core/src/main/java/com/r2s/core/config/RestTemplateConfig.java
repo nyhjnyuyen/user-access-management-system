@@ -16,8 +16,8 @@ public class RestTemplateConfig {
     @Bean
     public RestTemplate restTemplate() {
         RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(Timeout.ofMilliseconds(5000))
-                .setResponseTimeout(Timeout.ofMilliseconds(10000))
+                .setConnectTimeout(Timeout.ofMilliseconds(5000)) //time to allow establish initial TCP connection
+                .setResponseTimeout(Timeout.ofMilliseconds(30000)) //maximum waiting time after connection succeed but before receiving a response
                 .build();
         var httpClient = HttpClients.custom()
                 .setDefaultRequestConfig(requestConfig)

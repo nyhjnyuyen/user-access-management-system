@@ -7,6 +7,7 @@
 /Users/nguyendongnghi/user-access-management/core/src/main/java/com/r2s/core/exception/CustomException.java
 /Users/nguyendongnghi/user-access-management/core/src/main/java/com/r2s/core/CoreApplication.java
 /Users/nguyendongnghi/user-access-management/core/src/main/java/com/r2s/core/config/SecurityConstants.java
+/Users/nguyendongnghi/user-access-management/core/src/main/java/com/r2s/core/dto/InternalUserInfoResponse.java
 /Users/nguyendongnghi/user-access-management/core/src/main/java/com/r2s/core/exception/GlobalExceptionHandler.java
 /Users/nguyendongnghi/user-access-management/core/src/main/java/com/r2s/core/dto/AuthResponse.java
 /Users/nguyendongnghi/user-access-management/core/src/main/java/com/r2s/core/security/JwtFilter.java

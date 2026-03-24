@@ -168,51 +168,7 @@ public class AuthService {
                         }
                 }
         }
-        @Transactional
-        public void deleteUser(String username) {
-                User user = userRepo.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("Not found"));
-                user.setEnabled(false);
-                userRepo.save(user);
 
-                try {
-                        deleteUserInUserService(username);
-                } catch (RestClientException e){
-                        log.error("User disabled in auth-service but failed to delete in user-service:{}",username, e);
-                        throw new CustomException(HttpStatus.SERVICE_UNAVAILABLE, "User disabled in auth-service but failed to delete in user-service");
-                }
-                userRepo.delete(user);
-        }
-
-        private void deleteUserInUserService(String username) {
-
-                int maxAttempts = 3;
-                HttpHeaders headers = new HttpHeaders();
-                headers.set("X-Internal-Secret", internalSecret);
-                HttpEntity<Void> request = new HttpEntity<>(headers);
-
-                for (int i = 1; i <= maxAttempts; i++) {
-                        try {
-                                restTemplate.exchange(
-                                        userServiceUrl + "/internal/users/{username}",
-                                        org.springframework.http.HttpMethod.DELETE,
-                                        request,
-                                        Void.class,
-                                        username
-                                );
-                                return;
-                        } catch (RestClientException e){
-                                if(i == maxAttempts) {
-                                        throw e;
-                                }
-                                try {
-                                        Thread.sleep(1000);
-                                } catch (InterruptedException e1) {
-                                        Thread.currentThread().interrupt();
-                                        throw new RuntimeException("Retry interrupted", e1);
-                                }
-                        }
-                }
-        }
         private void syncUserEnabledToUserService(String username, boolean enabled) {
                 int maxAttempts = 3;
                 HttpHeaders headers = new HttpHeaders();

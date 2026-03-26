@@ -6,6 +6,7 @@ import com.r2s.auth.dto.RegisterRequest;
 import com.r2s.auth.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -34,6 +35,13 @@ public class AuthController {
     public ResponseEntity<String> activate(@PathVariable("token") String token){
         authService.activateAccount(token);
         return ResponseEntity.ok("Account activated successfully");
+    }
+
+    @DeleteMapping("/{username}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> deleteUser(@PathVariable("username") String username){
+        authService.deleteUser(username);
+        return ResponseEntity.ok("User deleted successfully");
     }
 
 }

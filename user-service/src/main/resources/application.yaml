@@ -4,10 +4,6 @@ server:
 api:
   base:
     path: /api/v1
-app:
-  internal-secret: ${INTERNAL_SECRET}
-  auth-service:
-    url: ${AUTH_SERVICE_URL}
 
 management:
   endpoints:
@@ -21,7 +17,20 @@ management:
 spring:
   application:
     name: user-service
+  kafka:
+    bootstrap-servers: kafka:9092
+    consumer:
+      group-id: user-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.r2s.core.event"
+        spring.json.use.type.headers: true
+    listener:
+      missing-topics-fatal: false
+
 
 jwt:
-  secret: ${JWT_SERCRET}
+  secret: ${JWT_SECRET}
   expiration-ms: 36000000

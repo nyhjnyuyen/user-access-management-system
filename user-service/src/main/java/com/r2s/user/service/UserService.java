@@ -2,6 +2,7 @@ package com.r2s.user.service;
 
 import com.r2s.core.dto.InternalUserInfoResponse;
 import com.r2s.core.entity.Role;
+import com.r2s.core.event.UserRegisteredEvent;
 import com.r2s.core.exception.CustomException;
 import com.r2s.user.dto.RegisterRequest;
 import com.r2s.user.dto.UpdateUserRequest;
@@ -23,19 +24,10 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
     private final UserRepository repo;
-    private final RestTemplate restTemplate;
-    private final AuthServiceClient authServiceClient;
 
-    @Value("${app.auth-service.url}")
-    private String authServiceUrl;
 
-    @Value("${app.internal-secret}")
-    private String internalSecret;
-
-    public UserService(UserRepository repo, RestTemplate restTemplate, AuthServiceClient authServiceClient) {
+    public UserService(UserRepository repo) {
             this.repo = repo;
-            this.restTemplate = restTemplate;
-        this.authServiceClient = authServiceClient;
     }
 
     public List<UserResponse> getAllUsers() {
@@ -44,31 +36,8 @@ public class UserService {
     }
 
     public UserResponse getUserByUsername(String username) {
-        User user = ensureLocalUserExists(username);
+        User user = repo.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("Not found"));
         return UserResponse.fromEntity(user);
-    }
-
-    @Transactional
-    public User ensureLocalUserExists(String username) {
-        User existingUser = repo.findByUsername(username).orElse(null);
-        if (existingUser != null) {
-            return existingUser;
-        }
-        InternalUserInfoResponse user = authServiceClient.getUserInfo(username);
-
-        User newUser = new User();
-        newUser.setUsername(user.getUsername());
-        newUser.setEmail(user.getEmail());
-        newUser.setRole(user.getRole());
-        newUser.setEnabled(user.isEnabled());
-        newUser.setFullName("");
-        newUser.setPassword("");
-
-        try {
-            return repo.save(newUser);
-        } catch (DataIntegrityViolationException e) {
-            return repo.findByUsername(username).orElseThrow(() -> e);
-        }
     }
 
     public UserResponse updateUser (String username, UpdateUserRequest req){
@@ -86,37 +55,13 @@ public class UserService {
         return UserResponse.fromEntity(repo.save(user));
     }
 
-    public void deleteUser(String username) {
+    public void deleteUserProjection(String username) {
         User user = repo.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("Not found"));
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("X-Internal-Secret", internalSecret);
-
-            HttpEntity<Void> entity = new HttpEntity<>(headers);
-            ResponseEntity<Void> response = restTemplate.exchange(authServiceUrl + "/internal/auth-users/{username}",
-                    HttpMethod.DELETE,
-                    entity,
-                    Void.class,
-                    username
-            );
-
-            if(!response.getStatusCode().is2xxSuccessful()) {
-                throw new CustomException(HttpStatus.SERVICE_UNAVAILABLE, "Auth-service delete failed: " + response.getStatusCode());
-            }
-        } catch (RestClientException e) {
-            throw new CustomException(HttpStatus.SERVICE_UNAVAILABLE, "Cannot delete user in auth-service");
-        }
-
-        try {
-            repo.delete(user);
-
-        } catch (Exception e) {
-            throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "User deleted in auth-service but failed in user-service");
-        }
+        repo.delete(user);
     }
 
     @Transactional
-    public void createUserFromAuth(RegisterRequest req){
+    public void createUserProjection(UserRegisteredEvent req){
         if (repo.findByUsername(req.getUsername()).isPresent()) {
             return;
         }
@@ -135,7 +80,7 @@ public class UserService {
     }
 
     @Transactional
-    public void updateUserFromAuth(String username, boolean enabled){
+    public void updateUserProjection(String username, boolean enabled){
         User user = repo.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("Not found"));
         user.setEnabled(enabled);
         repo.save(user);

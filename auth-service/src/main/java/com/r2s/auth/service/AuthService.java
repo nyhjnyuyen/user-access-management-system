@@ -5,53 +5,47 @@ import com.r2s.auth.dto.LoginRequest;
 import com.r2s.auth.dto.RegisterRequest;
 import com.r2s.auth.entity.ActivationToken;
 import com.r2s.auth.repository.ActivationTokenRepository;
-import com.r2s.core.dto.SyncUserStatusRequest;
 import com.r2s.core.entity.Role;
 import com.r2s.core.entity.User;
 import com.r2s.auth.repository.UserRepository;
+import com.r2s.core.event.UserActivatedEvent;
+import com.r2s.core.event.UserDeletedEvent;
+import com.r2s.core.event.UserRegisteredEvent;
 import com.r2s.core.exception.CustomException;
 import com.r2s.core.security.JwtUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.r2s.auth.producer.UserEventProducer;
 
 @Service
 public class AuthService {
         private final UserRepository userRepo;
         private final PasswordEncoder passwordEncoder;
         private final JwtUtil jwtUtil;
-        private final RestTemplate restTemplate;
         private final EmailService emailService;
         private final ActivationTokenRepository activationTokenRepository;
         private static final Logger log = LoggerFactory.getLogger(AuthService.class);
+        private final UserEventProducer userEventProducer;
 
         @Value("${app.activation.base-url}")
         private String activationBaseUrl;
 
-        @Value("${app.user-service.url}")
-        private String userServiceUrl;
 
-        @Value("${app.internal-secret}")
-        private String internalSecret;
-
-        public AuthService(UserRepository userRepo, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, RestTemplate restTemplate, EmailService emailService, ActivationTokenRepository activationTokenRepository) {
+        public AuthService(UserRepository userRepo, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, EmailService emailService, ActivationTokenRepository activationTokenRepository, UserEventProducer userEventProducer) {
                 this.userRepo = userRepo;
                 this.passwordEncoder = passwordEncoder;
                 this.jwtUtil = jwtUtil;
-                this.restTemplate = restTemplate;
                 this.emailService = emailService;
                 this.activationTokenRepository = activationTokenRepository;
+                this.userEventProducer = userEventProducer;
         }
 
         @Transactional
@@ -87,12 +81,15 @@ public class AuthService {
                 t.setUsedAt(null);
                 activationTokenRepository.save(t);
 
-                try {
-                       syncUserToUserService(syncReq);
-                } catch (RestClientException e){
-                        log.error("Failed to sync user to user-service", e);
-                        throw new CustomException(HttpStatus.SERVICE_UNAVAILABLE, "Cannot sync user to user-service");
-                }
+                userEventProducer.publishedUserRegistered(
+                        new UserRegisteredEvent(
+                                user.getUsername(),
+                                user.getEmail(),
+                                user.getRole(),
+                                user.isEnabled(),
+                                user.getPassword()
+                        )
+                );
 
                 //email format
                 String activationLink = activationBaseUrl + "/auth/activate/" + token;
@@ -130,74 +127,17 @@ public class AuthService {
                 userRepo.save(user);
                 t.setUsedAt(java.time.Instant.now());
                 activationTokenRepository.save(t);
-                try {
-                        syncUserEnabledToUserService(user.getUsername(),true);
-                } catch (RestClientException e){
-                        log.error("Failed to sync enabled status to user-service for user {}", user.getUsername());
-                        throw new CustomException(HttpStatus.SERVICE_UNAVAILABLE, "Account activated in auth-service but failed to sync status in user-service");
-                }
+                userEventProducer.publishedUserActivated(
+                        new UserActivatedEvent(user.getUsername(), true)
+                );
+        }
+        @Transactional
+        public void deleteUser(String username) {
+                User user = userRepo.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("Not found"));
+                userRepo.delete(user);
+                userEventProducer.publishedUserDeleted(
+                        new UserDeletedEvent(username)
+                );
         }
 
-        private void syncUserToUserService(RegisterRequest syncReq) {
-
-                int maxAttempts = 3;
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_JSON);
-                headers.set("X-Internal-Secret", internalSecret);
-
-                HttpEntity<RegisterRequest> request = new HttpEntity<>(syncReq, headers);
-
-                for (int i = 1; i <= maxAttempts; i++) {
-                        try {
-                                restTemplate.postForEntity(
-                                        userServiceUrl + "/internal/users",
-                                        request,
-                                        Void.class
-                                );
-                                return;
-                        } catch (RestClientException e){
-                                if(i == maxAttempts) {
-                                        throw e;
-                                }
-                                try {
-                                        Thread.sleep(1000);
-                                } catch (InterruptedException e1) {
-                                        Thread.currentThread().interrupt();
-                                        throw new RuntimeException("Retry interrupted", e1);
-                                }
-                        }
-                }
-        }
-
-        private void syncUserEnabledToUserService(String username, boolean enabled) {
-                int maxAttempts = 3;
-                HttpHeaders headers = new HttpHeaders();
-                headers.set("X-Internal-Secret", internalSecret);
-                SyncUserStatusRequest request = new SyncUserStatusRequest();
-                request.setEnabled(enabled);
-                HttpEntity<SyncUserStatusRequest> req = new HttpEntity<>(request, headers);
-
-                for (int i = 1; i <= maxAttempts; i++) {
-                        try {
-                                restTemplate.exchange(
-                                        userServiceUrl + "/internal/users/{username}/enabled",
-                                        org.springframework.http.HttpMethod.PATCH,
-                                        req,
-                                        Void.class,
-                                        username
-                                );
-                                return;
-                        } catch (RestClientException e){
-                                if(i == maxAttempts) {
-                                        throw e;
-                                }
-                                try {
-                                        Thread.sleep(1000);
-                                } catch (InterruptedException e1) {
-                                        Thread.currentThread().interrupt();
-                                        throw new RuntimeException("Retry interrupted", e1);
-                                }
-                        }
-                }
-        }
 }

@@ -10,25 +10,30 @@ spring:
     active: dev
   application:
     name: auth-service
+  kafka:
+    bootstrap-servers: kafka:9092
+    producer:
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+
 
 jwt:
-  secret: ${JWT_SERCRET}
+  secret: ${JWT_SECRET}
   expiration-ms: 36000000
 
 app:
-  internal-secret: ${INTERNAL_SECRET}
   activation:
     base-url: ${APP_BASE_URL}
-  user-service:
-    url: ${USER_SERVICE_URL}
 
-  management:
-    endpoints:
-      web:
-        exposure:
-          include: health
-    endpoint:
-      health:
-        show-details: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
 
 

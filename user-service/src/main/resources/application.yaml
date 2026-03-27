@@ -23,5 +23,5 @@ spring:
     name: user-service
 
 jwt:
-  secret: ${JWT_SERCRET}
+  secret: ${JWT_SECRET}
   expiration-ms: 36000000

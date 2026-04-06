@@ -1,10 +1,8 @@
 package com.r2s.user.service;
 
-import com.r2s.core.dto.InternalUserInfoResponse;
 import com.r2s.core.entity.Role;
 import com.r2s.core.event.UserRegisteredEvent;
 import com.r2s.core.exception.CustomException;
-import com.r2s.user.dto.RegisterRequest;
 import com.r2s.user.dto.UpdateUserRequest;
 import com.r2s.user.dto.UserResponse;
 import com.r2s.core.entity.User;
@@ -70,6 +68,7 @@ public class UserService {
         user.setEmail(req.getEmail());
         user.setFullName("");
         user.setEnabled(false);
+        user.setCreatedAt(req.getCreatedAt());
         try{
             repo.save(user);
         } catch (DataIntegrityViolationException e) {

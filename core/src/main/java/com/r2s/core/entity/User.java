@@ -12,6 +12,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name="users")
 public class User {
@@ -42,6 +44,8 @@ public class User {
     @Column(nullable = false)
     private boolean enabled = false;
 
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
     public String getPassword() {
         return password;
@@ -94,5 +98,13 @@ public class User {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }

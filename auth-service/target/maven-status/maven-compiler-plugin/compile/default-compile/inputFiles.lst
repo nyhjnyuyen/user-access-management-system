@@ -3,6 +3,7 @@
 /Users/nguyendongnghi/user-access-management/auth-service/src/main/java/com/r2s/auth/AuthServiceApplication.java
 /Users/nguyendongnghi/user-access-management/auth-service/src/main/java/com/r2s/auth/dto/LoginRequest.java
 /Users/nguyendongnghi/user-access-management/auth-service/src/main/java/com/r2s/auth/config/RateLimitFilter.java
+/Users/nguyendongnghi/user-access-management/auth-service/src/main/java/com/r2s/auth/scheduler/UserCleanupScheduler.java
 /Users/nguyendongnghi/user-access-management/auth-service/src/main/java/com/r2s/auth/dto/RegisterRequest.java
 /Users/nguyendongnghi/user-access-management/auth-service/src/main/java/com/r2s/auth/config/SecurityConfig.java
 /Users/nguyendongnghi/user-access-management/auth-service/src/main/java/com/r2s/auth/repository/ActivationTokenRepository.java

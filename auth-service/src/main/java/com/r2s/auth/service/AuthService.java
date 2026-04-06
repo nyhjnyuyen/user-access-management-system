@@ -20,10 +20,11 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.r2s.auth.producer.UserEventProducer;
+
+import java.time.LocalDateTime;
 
 @Service
 public class AuthService {
@@ -65,6 +66,7 @@ public class AuthService {
                 user.setRole(Role.ROLE_USER);
                 user.setEmail(request.getEmail());
                 user.setEnabled(false);
+                user.setCreatedAt(LocalDateTime.now());
                 userRepo.save(user);
 
                 RegisterRequest syncReq = new RegisterRequest();
@@ -87,7 +89,8 @@ public class AuthService {
                                 user.getEmail(),
                                 user.getRole(),
                                 user.isEnabled(),
-                                user.getPassword()
+                                user.getPassword(),
+                                user.getCreatedAt()
                         )
                 );
 

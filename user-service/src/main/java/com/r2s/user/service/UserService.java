@@ -9,14 +9,12 @@ import com.r2s.user.dto.UpdateUserRequest;
 import com.r2s.user.dto.UserResponse;
 import com.r2s.core.entity.User;
 import com.r2s.user.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.*;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
+
 
 import java.util.List;
 import java.util.stream.Collectors;

@@ -3,6 +3,7 @@ package com.r2s.auth.repository;
 import com.r2s.core.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,6 +15,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Transactional
     void deleteByUsername(String username);
     Optional<User> findByEmail(String email);
-    List<User> findByEnabledFalseAndCreatedAtBefore(LocalDateTime time);
+    List<User> findByEnabledFalseAndCreatedAtBefore(LocalDateTime time, Pageable pageable);
 }
 

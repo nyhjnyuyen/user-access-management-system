@@ -22,7 +22,7 @@ public class UserCleanupScheduler {
         this.producer = producer;
     }
 
-    @Scheduled(fixedDelay = 3600000) //10000) //moi 1 tieng
+    @Scheduled(fixedRate = 3600000) //10000) //moi 1 tieng
     public void deleteUnactivatedUsers() {
         LocalDateTime diff = LocalDateTime.now().minusHours(48); //Seconds(10);
         while (true) {

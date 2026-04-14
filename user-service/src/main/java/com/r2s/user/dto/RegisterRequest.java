@@ -48,12 +48,4 @@ public class RegisterRequest {
     public void setFullName(String fullName) {
         this.fullName = fullName;
     }
-    public RegisterRequest(String username, String password, String fullName, String email, Role role) {
-        this.username = username;
-        this.password = password;
-        this.role = role;
-        this.email = email;
-        this.fullName = fullName;
-    }
-    public RegisterRequest() {}
 }

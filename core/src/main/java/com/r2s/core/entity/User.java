@@ -9,25 +9,25 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name="users")
-@AllArgsConstructor
-@Builder
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank
+    @Size(min=4)
     @Column(nullable = false, unique = true)
     private String username;
 
+    @NotBlank
+    @Size(min=8)
     @Column(nullable = false)
     private String password;
 
@@ -35,11 +35,17 @@ public class User {
     @Column(nullable = false)
     private Role role; //ADMIN, USER
 
-    @Column(unique = true)
+    @Column(nullable=false, unique = true)
     private String email;
 
     private String fullName;
 
+    //them
+    @Column(nullable = false)
+    private boolean enabled = false;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
     public String getPassword() {
         return password;
@@ -85,4 +91,20 @@ public class User {
         this.fullName = fullName;
     }
 
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
 }

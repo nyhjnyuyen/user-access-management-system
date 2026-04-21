@@ -47,7 +47,7 @@ class UserServiceTest {
     }
 
     @Test
-    void getAllUsers() {
+    void getAllUsers_success_whenUsersExist() {
         List<User> mockUsers = List.of(
                 makeUser("john", "john@example.com", "", Role.ROLE_USER, false),
                 makeUser("jane", "jane@example.com", "", Role.ROLE_USER, false)
@@ -64,7 +64,18 @@ class UserServiceTest {
     }
 
     @Test
-    void getUserByUsername() {
+    void getAllUsers_returnsEmptyList_whenRepoReturnsEmptyList() {
+        when(repo.findAll()).thenReturn(List.of());
+
+        List<UserResponse> result = userService.getAllUsers();
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(repo).findAll();
+    }
+
+    @Test
+    void getUserByUsername_success_whenUsernameExists() {
         User mockUser = makeUser("john", "john@example.com", "", Role.ROLE_USER, false);
 
         when(repo.findByUsername("john")).thenReturn(Optional.of(mockUser));
@@ -77,7 +88,7 @@ class UserServiceTest {
     }
 
     @Test
-    void getUserByUsername_exception() {
+    void getUserByUsername_throwsUsernameNotFoundException_whenUsernameDoesNotExist() {
         when(repo.findByUsername("missing")).thenReturn(Optional.empty());
 
         assertThrows(UsernameNotFoundException.class,
@@ -87,7 +98,7 @@ class UserServiceTest {
     }
 
     @Test
-    void updateUser() {
+    void updateUser_success_whenUsernameExistsAndEmailIsAvailable() {
         User existingUser = makeUser("john", "old@example.com", "Old Name", Role.ROLE_USER, false);
 
         UpdateUserRequest req = new UpdateUserRequest();
@@ -109,7 +120,7 @@ class UserServiceTest {
     }
 
     @Test
-    void updateUser_shouldThrowIfUserNotFound() {
+    void updateUser_throwsUsernameNotFoundException_whenUsernameDoesNotExist() {
         UpdateUserRequest req = new UpdateUserRequest();
         req.setFullName("New Name");
         req.setEmail("new@example.com");
@@ -125,7 +136,7 @@ class UserServiceTest {
     }
 
     @Test
-    void updateUser_duplicateException() {
+    void updateUser_throwsCustomException_whenEmailAlreadyExists() {
         User existingUser = makeUser("john", "old@example.com", "John", Role.ROLE_USER, false);
         User anotherUser = makeUser("jane", "new@example.com", "", Role.ROLE_USER, false);
 
@@ -148,7 +159,7 @@ class UserServiceTest {
     }
 
     @Test
-    void updateUser_unchangedEmail() {
+    void updateUser_success_whenEmailIsUnchanged() {
         User existingUser = makeUser("john", "same@example.com", "Old Name", Role.ROLE_USER, false);
 
         UpdateUserRequest req = new UpdateUserRequest();
@@ -169,7 +180,7 @@ class UserServiceTest {
     }
 
     @Test
-    void deleteUserProjection() {
+    void deleteUserProjection_success_whenUsernameExists() {
         User mockUser = makeUser("john", "john@example.com", "", Role.ROLE_USER, false);
 
         when(repo.findByUsername("john")).thenReturn(Optional.of(mockUser));
@@ -181,7 +192,7 @@ class UserServiceTest {
     }
 
     @Test
-    void deleteUserProjection_notFoundException() {
+    void deleteUserProjection_throwsUsernameNotFoundException_whenUsernameDoesNotExist() {
         when(repo.findByUsername("missing")).thenReturn(Optional.empty());
 
         assertThrows(UsernameNotFoundException.class,
@@ -192,7 +203,7 @@ class UserServiceTest {
     }
 
     @Test
-    void createUserProjection() {
+    void createUserProjection_success_whenEventIsValidAndUsernameDoesNotExist() {
         LocalDateTime createdAt = LocalDateTime.now();
 
         UserRegisteredEvent event = new UserRegisteredEvent();
@@ -219,7 +230,7 @@ class UserServiceTest {
     }
 
     @Test
-    void createUserProjection_duplicatedUsernameException() {
+    void createUserProjection_skipsCreation_whenUsernameAlreadyExists() {
         User existingUser = makeUser("john", "john@example.com", "", Role.ROLE_USER, false);
 
         UserRegisteredEvent event = new UserRegisteredEvent();
@@ -234,7 +245,7 @@ class UserServiceTest {
     }
 
     @Test
-    void createUserProjection_dataIntegrityException() {
+    void createUserProjection_recoversFromRaceCondition_whenUsernameIsFoundAfterSaveFailure() {
         UserRegisteredEvent event = new UserRegisteredEvent();
         event.setUsername("john");
         event.setPassword("1234");
@@ -254,7 +265,7 @@ class UserServiceTest {
     }
 
     @Test
-    void createUserProjection_rethrowException() {
+    void createUserProjection_throwsDataIntegrityViolationException_whenUsernameIsStillNotFoundAfterSaveFailure() {
         UserRegisteredEvent event = new UserRegisteredEvent();
         event.setUsername("john");
         event.setPassword("1234");
@@ -275,7 +286,7 @@ class UserServiceTest {
     }
 
     @Test
-    void updateUserProjection_statusUpdated() {
+    void updateUserProjection_success_whenUsernameExists() {
         User user = makeUser("john", "john@example.com", "", Role.ROLE_USER, false);
 
         when(repo.findByUsername("john")).thenReturn(Optional.of(user));
@@ -289,7 +300,7 @@ class UserServiceTest {
     }
 
     @Test
-    void updateUserProjection_notFoundException() {
+    void updateUserProjection_throwsUsernameNotFoundException_whenUsernameDoesNotExist() {
         when(repo.findByUsername("missing")).thenReturn(Optional.empty());
 
         assertThrows(UsernameNotFoundException.class,

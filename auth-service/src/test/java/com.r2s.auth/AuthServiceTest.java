@@ -78,9 +78,8 @@ class AuthServiceTest {
         return user;
     }
 
-    // ===== register success =====
     @Test
-    void register_shouldSaveUserCreateTokenPublishEventAndSendEmail() {
+    void register_success_whenRequestValid() {
         RegisterRequest request = new RegisterRequest();
         request.setUsername("john");
         request.setPassword("12345678");
@@ -128,9 +127,8 @@ class AuthServiceTest {
         verify(emailService).sendActivationEmail(eq("john@example.com"), contains("/auth/activate/"));
     }
 
-    // ===== register username exists =====
     @Test
-    void register_shouldThrowIfUsernameExists() {
+    void register_throwsConflict_whenUsernameExists() {
         RegisterRequest request = new RegisterRequest();
         request.setUsername("john");
         request.setPassword("12345678");
@@ -152,9 +150,8 @@ class AuthServiceTest {
         verify(emailService, never()).sendActivationEmail(any(), any());
     }
 
-    // ===== register email exists =====
     @Test
-    void register_shouldThrowIfEmailExists() {
+    void register_throwsConflict_whenEmailExists() {
         RegisterRequest request = new RegisterRequest();
         request.setUsername("john");
         request.setPassword("12345678");
@@ -177,9 +174,8 @@ class AuthServiceTest {
         verify(emailService, never()).sendActivationEmail(any(), any());
     }
 
-    // ===== login success =====
     @Test
-    void login_shouldReturnTokenWhenCredentialsAreCorrectAndAccountEnabled() {
+    void login_success_whenCredentialsValid() {
         LoginRequest request = new LoginRequest();
         request.setUsername("john");
         request.setPassword("12345678");
@@ -200,9 +196,8 @@ class AuthServiceTest {
         verify(jwtUtil).generateToken("john");
     }
 
-    // ===== login user not found =====
     @Test
-    void login_shouldThrowIfUserNotFound() {
+    void login_throwsNotFound_whenUserNotFound() {
         LoginRequest request = new LoginRequest();
         request.setUsername("missing");
         request.setPassword("12345678");
@@ -216,9 +211,8 @@ class AuthServiceTest {
         verify(jwtUtil, never()).generateToken(any());
     }
 
-    // ===== login wrong password =====
     @Test
-    void login_shouldThrowIfPasswordIncorrect() {
+    void login_throwsBadCredentials_whenPasswordIncorrect() {
         LoginRequest request = new LoginRequest();
         request.setUsername("john");
         request.setPassword("wrong-password");
@@ -235,9 +229,8 @@ class AuthServiceTest {
         verify(jwtUtil, never()).generateToken(any());
     }
 
-    // ===== login account not activated =====
     @Test
-    void login_shouldThrowIfAccountNotActivated() {
+    void login_throwsUnprocessableEntity_whenAccountNotActivated() {
         LoginRequest request = new LoginRequest();
         request.setUsername("john");
         request.setPassword("12345678");
@@ -257,9 +250,8 @@ class AuthServiceTest {
         verify(jwtUtil, never()).generateToken(any());
     }
 
-    // ===== activate success =====
     @Test
-    void activateAccount_shouldEnableUserMarkTokenUsedAndPublishEvent() {
+    void activate_success_whenTokenValid() {
         User user = makeUser("john", "john@example.com", "encoded-password", Role.ROLE_USER, false);
 
         ActivationToken token = new ActivationToken();
@@ -291,9 +283,8 @@ class AuthServiceTest {
         assertTrue(publishedEvent.isEnabled());
     }
 
-    // ===== activate invalid token =====
     @Test
-    void activateAccount_shouldThrowIfTokenNotFound() {
+    void activate_throwsNotFound_whenTokenNotFound() {
         when(activationTokenRepository.findByToken("missing-token")).thenReturn(Optional.empty());
 
         CustomException ex = assertThrows(CustomException.class,
@@ -308,9 +299,8 @@ class AuthServiceTest {
         verify(userEventProducer, never()).publishedUserActivated(any());
     }
 
-    // ===== activate token already used =====
     @Test
-    void activateAccount_shouldThrowIfTokenAlreadyUsed() {
+    void activate_throwsConflict_whenTokenAlreadyUsed() {
         ActivationToken token = new ActivationToken();
         token.setToken("used-token");
         token.setUsername("john");
@@ -332,7 +322,7 @@ class AuthServiceTest {
 
     // ===== activate token expired =====
     @Test
-    void activateAccount_shouldThrowIfTokenExpired() {
+    void activate_throwsConflict_whenTokenExpired() {
         ActivationToken token = new ActivationToken();
         token.setToken("expired-token");
         token.setUsername("john");
@@ -352,9 +342,8 @@ class AuthServiceTest {
         verify(userRepo, never()).save(any());
     }
 
-    // ===== activate user not found =====
     @Test
-    void activateAccount_shouldThrowIfUserNotFound() {
+    void activate_throwsNotFound_whenUserNotFound() {
         ActivationToken token = new ActivationToken();
         token.setToken("valid-token");
         token.setUsername("john");
@@ -376,9 +365,8 @@ class AuthServiceTest {
         verify(userEventProducer, never()).publishedUserActivated(any());
     }
 
-    // ===== deleteUser success =====
     @Test
-    void deleteUser_shouldDeleteUserAndPublishEvent() {
+    void deleteUser_success_whenUserExists() {
         User user = makeUser("john", "john@example.com", "encoded-password", Role.ROLE_USER, true);
 
         when(userRepo.findByUsername("john")).thenReturn(Optional.of(user));
@@ -394,9 +382,8 @@ class AuthServiceTest {
         assertEquals("john", eventCaptor.getValue().getUsername());
     }
 
-    // ===== deleteUser not found =====
     @Test
-    void deleteUser_shouldThrowIfUserNotFound() {
+    void deleteUser_throwsNotFound_whenUserNotFound() {
         when(userRepo.findByUsername("missing")).thenReturn(Optional.empty());
 
         assertThrows(UsernameNotFoundException.class,

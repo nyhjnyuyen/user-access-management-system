@@ -21,6 +21,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -74,7 +75,8 @@ class AuthControllerTest {
                             .accessDeniedHandler((req,res,e) -> res.sendError(403))
                     )
                     .authorizeHttpRequests(auth -> auth
-                            .requestMatchers("/auth/**").permitAll()
+                            .requestMatchers("/auth/register", "/auth/login", "/auth/activate/**").permitAll()
+                            .requestMatchers(HttpMethod.DELETE, "/auth/**").authenticated()
                             .anyRequest().authenticated()
                     )
                     .build();
@@ -192,13 +194,13 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("activate_returns409_whenTokenExpired")
-    void activate_returns409_whenTokenExpired() throws Exception {
-        doThrow(new CustomException(HttpStatus.CONFLICT, "Token expired"))
+    @DisplayName("activate_returns401_whenTokenExpired")
+    void activate_returns401_whenTokenExpired() throws Exception {
+        doThrow(new CustomException(HttpStatus.UNAUTHORIZED, "Token expired"))
                 .when(authService).activateAccount("expired-token");
 
         mockMvc.perform(get("/auth/activate/expired-token"))
-                .andExpect(status().isConflict());
+                .andExpect(status().isUnauthorized());
 
         verify(authService).activateAccount("expired-token");
         verifyNoMoreInteractions(authService);
@@ -224,6 +226,16 @@ class AuthControllerTest {
     void deleteUser_returns403_whenRequesterIsNotAdmin() throws Exception {
         mockMvc.perform(delete("/auth/john"))
                 .andExpect(status().isForbidden());
+
+        verify(authService, never()).deleteUser(any());
+        verifyNoMoreInteractions(authService);
+    }
+
+    @Test
+    @DisplayName("deleteUser_returns401_whenTokenDoesntExist")
+    void deleteUser_returns401_whenTokenDoesntExist() throws Exception {
+        mockMvc.perform(delete("/auth/jess"))
+                .andExpect(status().isUnauthorized());
 
         verify(authService, never()).deleteUser(any());
         verifyNoMoreInteractions(authService);

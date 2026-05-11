@@ -322,7 +322,7 @@ class AuthServiceTest {
 
     // ===== activate token expired =====
     @Test
-    void activate_throwsConflict_whenTokenExpired() {
+    void activate_throwsUnauthorized_whenTokenExpired() {
         ActivationToken token = new ActivationToken();
         token.setToken("expired-token");
         token.setUsername("john");
@@ -334,7 +334,7 @@ class AuthServiceTest {
         CustomException ex = assertThrows(CustomException.class,
                 () -> authService.activateAccount("expired-token"));
 
-        assertEquals(HttpStatus.CONFLICT, ex.getStatus());
+        assertEquals(HttpStatus.UNAUTHORIZED, ex.getStatus());
         assertEquals("Token expired", ex.getMessage());
 
         verify(activationTokenRepository).findByToken("expired-token");

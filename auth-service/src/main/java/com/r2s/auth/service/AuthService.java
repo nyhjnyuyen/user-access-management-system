@@ -121,7 +121,7 @@ public class AuthService {
                         throw new CustomException(HttpStatus.CONFLICT, "Token already used");
                 }
                 if (t.getExpiresAt().isBefore(java.time.Instant.now())) {
-                        throw new CustomException(HttpStatus.CONFLICT, "Token expired");
+                        throw new CustomException(HttpStatus.UNAUTHORIZED, "Token expired");
                 }
 
                 User user = userRepo.findByUsername(t.getUsername()).orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "User is not found"));
